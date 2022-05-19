@@ -108,3 +108,63 @@ end_time = time.time() - start_time
 print(f'Done. {end_time} total seconds have elapsed.')
 ```
 
+------
+
+## AHT Code Changes
+
+```python
+fig.write_image(f'outputs/aht/{file}.png')
+fig.write_image(f'{output_path}/aht/{file}.png')
+fig.write_html(f'outputs/aht/{file}.html',include_plotlyjs="cdn")
+fig.write_html(f'{output_path}/aht/{file}.html',include_plotlyjs="cdn")
+forecast.to_excel(f'outputs/aht/{file}.xlsx')
+forecast.to_excel(f'{output_path}/aht/{file}.xlsx')
+```
+
+```python
+# create cross-validation df
+df_cv = cross_validation(m,
+                         initial='730 days', period='180 days', 
+                         horizon = '365 days'
+                        )
+df_cv.head()
+```
+
+```python
+# add filename as column
+parts = file.split('_monthly')
+team = parts[len(parts)-2].split('.')[0]
+forecast['Team'] = team
+
+# determine last row
+last_row = forecast['ds'].max()
+end_date = f"'{last_row}'"
+
+# remove duplicate rows before insert
+delete = f'''DELETE FROM
+                    "CCO_WFM"."Forecasts_Monthly_AHT" "A1"
+                WHERE
+                    "A1"."Team" = '{team}'
+                    
+                    AND "A1"."DS" <= TO_DATE({end_date},'YYYY-MM-DD HH24:MI:SS')'''
+
+with ODS.begin() as conn:
+    conn.execute(delete)
+```
+
+```python
+# Import forecast to database
+rows_imported = 0
+start_time = time.time()
+
+cols = forecast.dtypes[forecast.dtypes=='object'].index
+type_mapping = {col : String(100) for col in cols }
+
+print(f'importing rows {rows_imported} to {rows_imported + len(forecast)}...', end='')
+forecast.to_sql('Forecasts_Monthly_AHT',ODS,schema='CCO_WFM',if_exists='append',dtype=type_mapping)
+rows_imported += len(df)
+
+end_time = time.time() - start_time
+print(f'Done. {end_time} total seconds have elapsed.')
+```
+
