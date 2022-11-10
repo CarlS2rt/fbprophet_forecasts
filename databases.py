@@ -22,7 +22,7 @@ def oracle(user,password):
     SQL_DRIVER = 'cx_oracle'
     USERNAME = user
     PASSWORD = password
-    HOST = 'RACPRD06.TDS.LOCAL'
+    HOST = 'RACPRD02.TDS.LOCAL'
     PORT = 1521
     SERVICE = 'DB070'
     ENGINE_PATH_WIN_AUTH = DIALECT + '+' + SQL_DRIVER + '://' + USERNAME + ':' + PASSWORD +'@' + HOST + ':' + str(PORT) + '/?service_name=' + SERVICE
